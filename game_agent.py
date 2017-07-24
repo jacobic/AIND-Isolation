@@ -2,8 +2,21 @@
 test your agent's strength against a set of known agents using tournament.py
 and include the results in your report.
 """
-import random
+__author__ = "Jacob Ider Chitham"
+__credits__ = ["Udacity"]
+__version__ = "1.0.0"
+__maintainer__ = "Jacob Ider Chitham"
+__email__ = "jacobic@hotmail.co.uk"
+__status__ = "In Progress"
 
+import random
+import logging
+
+log_file = 'debug.log'
+log_format = '%(asctime)s - %(levelname)s - %(message)s'
+log_level = logging.DEBUG
+logging.basicConfig(filename=log_file,level=log_level,format=log_format)
+logging.FileHandler(filename=log_file, mode='w')
 
 class SearchTimeout(Exception):
     """Subclass base exception for code clarity. """
