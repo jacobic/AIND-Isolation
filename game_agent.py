@@ -1,16 +1,18 @@
-"""Finish all TODO items in this file to complete the isolation project, then
-test your agent's strength against a set of known agents using tournament.py
-and include the results in your report.
-"""
 __author__ = "Jacob Ider Chitham"
 __credits__ = ["Udacity"]
-__version__ = "1.0.0"
+__version__ = "1.0.0-alpha"
 __maintainer__ = "Jacob Ider Chitham"
 __email__ = "jacobic@hotmail.co.uk"
 __status__ = "In Progress"
 
+"""Finish all TODO items in this file to complete the isolation project, then
+test your agent's strength against a set of known agents using tournament.py
+and include the results in your report.
+"""
+
 import random
 import logging
+#import isolation as iso
 
 log_file = 'debug.log'
 log_format = '%(asctime)s - %(levelname)s - %(message)s'
@@ -21,7 +23,6 @@ logging.FileHandler(filename=log_file, mode='w')
 class SearchTimeout(Exception):
     """Subclass base exception for code clarity. """
     pass
-
 
 def custom_score(game, player):
     """Calculate the heuristic value of a game state from the point of view
@@ -131,6 +132,38 @@ class IsolationPlayer:
         self.time_left = None
         self.TIMER_THRESHOLD = timeout
 
+def terminal_test(game):
+    """ Return True if the game is over for the active player
+    and False otherwise.
+    """
+    
+    return not bool(game.get_legal_moves())
+    
+def max_value(game):
+    """ Return the utility of the current game state from the perspective
+    of the specified player if the game is over, otherwise return the 
+    maximum value over all legal child nodes.
+    """
+    
+    if terminal_test(game):
+        return game.utility()
+    v = float("-inf")
+    for a in game.get_legal_moves():
+        v = max(v, min_value(game.forecast_move(a)))
+    return v
+
+def min_value(game):
+    """ Return the utility of the current game state from the perspective
+    of the specified player if the game is over, otherwise return the 
+    minimum value over all legal child nodes.
+    """
+    
+    if terminal_test(game):
+        return game.utility()
+    v = float("inf")
+    for a in game.get_legal_moves():
+        v = min(v, max_value(game.forecast_move(a)))
+    return v         
 
 class MinimaxPlayer(IsolationPlayer):
     """Game-playing agent that chooses a move using depth-limited minimax
@@ -182,7 +215,7 @@ class MinimaxPlayer(IsolationPlayer):
 
         # Return the best move from the last completed search iteration
         return best_move
-
+    
     def minimax(self, game, depth):
         """Implement depth-limited minimax search algorithm as described in
         the lectures.
@@ -226,7 +259,8 @@ class MinimaxPlayer(IsolationPlayer):
             raise SearchTimeout()
 
         # TODO: finish this function!
-        raise NotImplementedError
+        return max(game.get_legal_moves(), 
+                   key=lambda m: min_value(game.forecast_move(m)))
 
 
 class AlphaBetaPlayer(IsolationPlayer):
