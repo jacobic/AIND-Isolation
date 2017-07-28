@@ -49,7 +49,7 @@ def custom_score(game, player):
         The heuristic value of the current game state to the specified player.
     """
     # TODO: finish this function!
-    raise NotImplementedError
+    return len(game.get_legal_moves())
 
 
 def custom_score_2(game, player):
@@ -132,39 +132,6 @@ class IsolationPlayer:
         self.time_left = None
         self.TIMER_THRESHOLD = timeout
 
-def terminal_test(game):
-    """ Return True if the game is over for the active player
-    and False otherwise.
-    """
-    
-    return not bool(game.get_legal_moves())
-    
-def max_value(game):
-    """ Return the utility of the current game state from the perspective
-    of the specified player if the game is over, otherwise return the 
-    maximum value over all legal child nodes.
-    """
-    
-    if terminal_test(game):
-        return game.utility()
-    v = float("-inf")
-    for a in game.get_legal_moves():
-        v = max(v, min_value(game.forecast_move(a)))
-    return v
-
-def min_value(game):
-    """ Return the utility of the current game state from the perspective
-    of the specified player if the game is over, otherwise return the 
-    minimum value over all legal child nodes.
-    """
-    
-    if terminal_test(game):
-        return game.utility()
-    v = float("inf")
-    for a in game.get_legal_moves():
-        v = min(v, max_value(game.forecast_move(a)))
-    return v         
-
 class MinimaxPlayer(IsolationPlayer):
     """Game-playing agent that chooses a move using depth-limited minimax
     search. You must finish and test this player to make sure it properly uses
@@ -216,6 +183,47 @@ class MinimaxPlayer(IsolationPlayer):
         # Return the best move from the last completed search iteration
         return best_move
     
+    def terminal_test(self, game):
+        """ Return True if the game is over for the active player
+        and False otherwise.
+        """
+    
+        if self.time_left() < self.TIMER_THRESHOLD:
+            raise SearchTimeout()
+        return not bool(game.get_legal_moves())
+    
+    def max_value(self, game, depth):
+        """ Return the utility of the current game state from the perspective
+        of the specified player if the game is over, otherwise return the 
+        maximum value over all legal child nodes.
+        """
+        
+        if self.time_left() < self.TIMER_THRESHOLD:
+                raise SearchTimeout()
+        if game.terminal_test() or depth == 0:     
+            return custom_score(game, game.active_player)
+        v = float("-inf")
+        for a in game.get_legal_moves():
+            v = max(v, self.min_value(game.forecast_move(a), depth - 1))
+            print(game.to_string)
+        return v
+    
+    def min_value(self, game, depth):
+        """ Return the utility of the current game state from the perspective
+        of the specified player if the game is over, otherwise return the 
+        minimum value over all legal child nodes.
+        """
+        
+        if self.time_left() < self.TIMER_THRESHOLD:
+                raise SearchTimeout()
+        if game.terminal_test() or depth == 0:     
+            return custom_score(game, game.active_player)
+        v = float("inf")
+        for a in game.get_legal_moves():
+            v = min(v, self.max_value(game.forecast_move(a), depth - 1))
+            print(game.to_string)
+        return v   
+    
     def minimax(self, game, depth):
         """Implement depth-limited minimax search algorithm as described in
         the lectures.
@@ -260,7 +268,7 @@ class MinimaxPlayer(IsolationPlayer):
 
         # TODO: finish this function!
         return max(game.get_legal_moves(), 
-                   key=lambda m: min_value(game.forecast_move(m)))
+                   key=lambda m: self.min_value(game.forecast_move(m)))
 
 
 class AlphaBetaPlayer(IsolationPlayer):
