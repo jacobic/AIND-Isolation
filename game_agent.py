@@ -13,20 +13,6 @@ __status__ = "In Progress"
 # number of other tricks and optimizations that have been developed for other 
 # games (like chess or checkers) that might be applicable to Isolation.
 
-# delta player distances to center, penalize peripheral positions, adjust move 
-# heuristics etc. got me to 77%  in one run. these are purely context free 
-# heuristic. if we add look ahead moves etc we can improve it further.
-
-# @barni if you look ahead in moves for heuristics that's equivalent of doing a recursive search inside a recursive. imo unnecessary to finish this project, but to each his own. a more efficient way is running some simple policy mapping similar to the case in q learning, by running tons of games, run some statistics, and derive weights to to each cell as a function of the number of move played.
-# 
-# 
-# Han Lee 
-# [5 months ago] 
-# @barni aka supervised learning a policy network, put that down as your 
-# heuristics function. effectively turning a simple search into reinforcement 
-# learning search w/o policy gradients
-
-
 
 """Finish all TODO items in this file to complete the isolation project, then
 test your agent's strength against a set of known agents using tournament.py
@@ -35,7 +21,6 @@ and include the results in your report.
 
 import random
 import logging
-#import isolation as iso
 
 log_file = 'debug.log'
 log_format = '%(asctime)s - %(levelname)s - %(message)s'
@@ -72,7 +57,20 @@ def custom_score(game, player):
         The heuristic value of the current game state to the specified player.
     """
     # TODO: finish this function!
-    return len(game.get_legal_moves(game))
+    
+    # delta player distances to center, penalize peripheral positions, adjust move 
+    # heuristics etc. got me to 77%  in one run. these are purely context free 
+    # heuristic. if we add look ahead moves etc we can improve it further.
+    # @barni if you look ahead in moves for heuristics that's equivalent of doing a recursive search inside a recursive. imo unnecessary to finish this project, but to each his own. a more efficient way is running some simple policy mapping similar to the case in q learning, by running tons of games, run some statistics, and derive weights to to each cell as a function of the number of move played.
+    # Han Lee 
+    # @barni aka supervised learning a policy network, put that down as your 
+    # heuristics function. effectively turning a simple search into reinforcement 
+    # learning search w/o policy gradients
+    
+    w, h = game.width / 2., game.height / 2.
+    x1, y1 = game.get_player_location(player)
+    x2, y2 = game.get_player_location(game.get_opponent(player))  
+    return float(((w - x1)**2 + (h - y1)**2) - ((w - x2)**2 + (h - y2)**2))
 
 
 def custom_score_2(game, player):
@@ -98,7 +96,9 @@ def custom_score_2(game, player):
         The heuristic value of the current game state to the specified player.
     """
     # TODO: finish this function!
-    raise NotImplementedError
+    own_moves = len(game.get_legal_moves(player))
+    opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
+    return own_moves - opp_moves
 
 
 def custom_score_3(game, player):
@@ -124,7 +124,9 @@ def custom_score_3(game, player):
         The heuristic value of the current game state to the specified player.
     """
     # TODO: finish this function!
-    raise NotImplementedError
+    own_moves = len(game.get_legal_moves(player))
+    opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
+    return own_moves - opp_moves
 
 
 class IsolationPlayer:
@@ -225,7 +227,7 @@ class MinimaxPlayer(IsolationPlayer):
         if self.time_left() < self.TIMER_THRESHOLD:
             raise SearchTimeout()
         if self.terminal_test(game) or depth == 0:     
-            return self.score(game, game._player_1) - self.score(game, game._player_2)
+            return self.score(game, game._player_1)
         v = float("-inf")
         for a in game.get_legal_moves():
             v = max(v, self.min_value(game.forecast_move(a), depth - 1))
@@ -240,7 +242,7 @@ class MinimaxPlayer(IsolationPlayer):
         if self.time_left() < self.TIMER_THRESHOLD:
             raise SearchTimeout()
         if self.terminal_test(game) or depth == 0:     
-            return self.score(game, game._player_1) - self.score(game, game._player_2)
+            return self.score(game, game._player_1)
         v = float("inf")
         for a in game.get_legal_moves():
             v = min(v, self.max_value(game.forecast_move(a), depth - 1))
@@ -368,8 +370,10 @@ class AlphaBetaPlayer(IsolationPlayer):
         
         if self.time_left() < self.TIMER_THRESHOLD:
             raise SearchTimeout()
-        if self.terminal_test(game) or depth == 0:     
-            return self.score(game, game._player_1) - self.score(game, game._player_2)
+
+        if self.terminal_test(game) or depth == 0:   
+            # TODO: this should never return -1  
+            return self.score(game, game._player_1)
         v = float("-inf")
         for a in game.get_legal_moves():
             v = max(v, self.min_value(game.forecast_move(a), depth - 1, alpha, beta))
@@ -387,7 +391,7 @@ class AlphaBetaPlayer(IsolationPlayer):
         if self.time_left() < self.TIMER_THRESHOLD:
             raise SearchTimeout()
         if self.terminal_test(game) or depth == 0:     
-            return self.score(game, game._player_1) - self.score(game, game._player_2)
+            return self.score(game, game._player_1)
         v = float("inf")
         for a in game.get_legal_moves():
             v = min(v, self.max_value(game.forecast_move(a), depth - 1, alpha, beta))
