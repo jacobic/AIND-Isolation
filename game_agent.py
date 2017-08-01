@@ -5,6 +5,29 @@ __maintainer__ = "Jacob Ider Chitham"
 __email__ = "jacobic@hotmail.co.uk"
 __status__ = "In Progress"
 
+#  Note: this function should be called from within a Player instance as
+#     `self.score()` -- you should not need to call this function directly.
+
+# My apologies. The AIMA textbook talks about some other strategies (like “killer
+# heuristic”, transposition tables, and dynamic move ordering), and there are a
+# number of other tricks and optimizations that have been developed for other 
+# games (like chess or checkers) that might be applicable to Isolation.
+
+# delta player distances to center, penalize peripheral positions, adjust move 
+# heuristics etc. got me to 77%  in one run. these are purely context free 
+# heuristic. if we add look ahead moves etc we can improve it further.
+
+# @barni if you look ahead in moves for heuristics that's equivalent of doing a recursive search inside a recursive. imo unnecessary to finish this project, but to each his own. a more efficient way is running some simple policy mapping similar to the case in q learning, by running tons of games, run some statistics, and derive weights to to each cell as a function of the number of move played.
+# 
+# 
+# Han Lee 
+# [5 months ago] 
+# @barni aka supervised learning a policy network, put that down as your 
+# heuristics function. effectively turning a simple search into reinforcement 
+# learning search w/o policy gradients
+
+
+
 """Finish all TODO items in this file to complete the isolation project, then
 test your agent's strength against a set of known agents using tournament.py
 and include the results in your report.
@@ -49,7 +72,7 @@ def custom_score(game, player):
         The heuristic value of the current game state to the specified player.
     """
     # TODO: finish this function!
-    return len(game.get_legal_moves())
+    return len(game.get_legal_moves(game))
 
 
 def custom_score_2(game, player):
@@ -126,7 +149,7 @@ class IsolationPlayer:
         positive value large enough to allow the function to return before the
         timer expires.
     """
-    def __init__(self, search_depth=3, score_fn=custom_score, timeout=10.):
+    def __init__(self, search_depth=3, score_fn=custom_score, timeout=1.):
         self.search_depth = search_depth
         self.score = score_fn
         self.time_left = None
@@ -200,9 +223,9 @@ class MinimaxPlayer(IsolationPlayer):
         """
         
         if self.time_left() < self.TIMER_THRESHOLD:
-                raise SearchTimeout()
+            raise SearchTimeout()
         if self.terminal_test(game) or depth == 0:     
-            return custom_score(game, game.active_player)
+            return self.score(game, game._player_1) - self.score(game, game._player_2)
         v = float("-inf")
         for a in game.get_legal_moves():
             v = max(v, self.min_value(game.forecast_move(a), depth - 1))
@@ -215,9 +238,9 @@ class MinimaxPlayer(IsolationPlayer):
         """
         
         if self.time_left() < self.TIMER_THRESHOLD:
-                raise SearchTimeout()
+            raise SearchTimeout()
         if self.terminal_test(game) or depth == 0:     
-            return custom_score(game, game.active_player)
+            return self.score(game, game._player_1) - self.score(game, game._player_2)
         v = float("inf")
         for a in game.get_legal_moves():
             v = min(v, self.max_value(game.forecast_move(a), depth - 1))
@@ -315,11 +338,15 @@ class AlphaBetaPlayer(IsolationPlayer):
         try:
             # The try/except block will automatically catch the exception
             # raised when the timer is about to expire.
-            return self.alphabeta(game, self.search_depth)
+            depth = 3
+            while self.time_left() > self.TIMER_THRESHOLD:
+                best_move = self.alphabeta(game, depth)
+                depth = depth + 1
 
         except SearchTimeout:
-            pass  # Handle any actions required after timeout as needed
-
+            # Handle any actions required after timeout as needed
+            logging.info('SearchTimeout occurred, depth = {}, best move = {}'.format(depth, best_move))
+            return best_move
         # Return the best move from the last completed search iteration
         return best_move
     
@@ -340,9 +367,9 @@ class AlphaBetaPlayer(IsolationPlayer):
         """
         
         if self.time_left() < self.TIMER_THRESHOLD:
-                raise SearchTimeout()
+            raise SearchTimeout()
         if self.terminal_test(game) or depth == 0:     
-            return custom_score(game, game.active_player)
+            return self.score(game, game._player_1) - self.score(game, game._player_2)
         v = float("-inf")
         for a in game.get_legal_moves():
             v = max(v, self.min_value(game.forecast_move(a), depth - 1, alpha, beta))
@@ -358,9 +385,9 @@ class AlphaBetaPlayer(IsolationPlayer):
         """
         
         if self.time_left() < self.TIMER_THRESHOLD:
-                raise SearchTimeout()
+            raise SearchTimeout()
         if self.terminal_test(game) or depth == 0:     
-            return custom_score(game, game.active_player)
+            return self.score(game, game._player_1) - self.score(game, game._player_2)
         v = float("inf")
         for a in game.get_legal_moves():
             v = min(v, self.max_value(game.forecast_move(a), depth - 1, alpha, beta))
@@ -416,8 +443,8 @@ class AlphaBetaPlayer(IsolationPlayer):
         """
         if self.time_left() < self.TIMER_THRESHOLD:
             raise SearchTimeout()
-        #logging.debug('format {}\ndepth {}, alpha {}, beta {} ,'.format(game.forecast_move(m), depth, alpha, beta ))
+        
         # TODO: finish this function!
         return max(game.get_legal_moves(), 
-                   key=lambda m: self.min_value(game.forecast_move(m), self.search_depth, alpha, beta), default=0)
+                   key=lambda m: self.min_value(game.forecast_move(m), depth, alpha, beta), default=0)   
 
