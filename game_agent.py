@@ -21,13 +21,13 @@ and include the results in your report.
 """
 
 import random
-import logging
-
-log_file = 'debug.log'
-log_format = '%(asctime)s - %(levelname)s - %(message)s'
-log_level = logging.DEBUG
-logging.basicConfig(filename=log_file,level=log_level,format=log_format)
-logging.FileHandler(filename=log_file, mode='w')
+# import logging
+# 
+# log_file = 'debug.log'
+# log_format = '%(asctime)s - %(levelname)s - %(message)s'
+# log_level = logging.DEBUG
+# logging.basicConfig(filename=log_file,level=log_level,format=log_format)
+# logging.FileHandler(filename=log_file, mode='w')
 
 class SearchTimeout(Exception):
     """Subclass base exception for code clarity. """
@@ -353,16 +353,16 @@ class AlphaBetaPlayer(IsolationPlayer):
                     if move != (-1, -1):
                         best_move = move
                         board_look_up[game] = best_move
-                        logging.debug('best_move = {}, adding to lookup'.format(best_move))
+#                         logging.debug('best_move = {}, adding to lookup'.format(best_move))
                     depth += 1
                     
                 else:
-                    logging.debug('no legal moves available')
+#                     logging.debug('no legal moves available')
                     break                   
             except SearchTimeout:
                 # Handle any actions required after timeout as needed
-                logging.warn('SearchTimeout: blank_spaces = {}, depth = {}, best move = {}'
-                             .format(len(game.get_blank_spaces()), depth, best_move))
+#                 logging.warn('SearchTimeout: blank_spaces = {}, depth = {}, best move = {}'
+#                              .format(len(game.get_blank_spaces()), depth, best_move))
                 break
         # Return the best move from the last completed search iteration
         return best_move
@@ -406,8 +406,8 @@ class AlphaBetaPlayer(IsolationPlayer):
             raise SearchTimeout()
         if self.terminal_test(game) or depth == 0:
             winner = (game.is_winner(game._player_1), game.is_winner(game._player_2))
-            logging.warn('terminal_test = {}, winner(p1,p2) = {}, score = {}, depth = {}, '
-                         .format(self.terminal_test(game), winner, self.score(game, game._player_1), depth))     
+#             logging.warn('terminal_test = {}, winner(p1,p2) = {}, score = {}, depth = {}, '
+#                          .format(self.terminal_test(game), winner, self.score(game, game._player_1), depth))     
             return self.score(game, game._player_1)
         v = float("inf")
         for a in game.get_legal_moves():
@@ -467,7 +467,7 @@ class AlphaBetaPlayer(IsolationPlayer):
             raise SearchTimeout()
         
         # TODO: finish this function!
-        logging.debug ('game.get_legal_moves() = {}, depth = {}'.format(game.get_legal_moves(), depth))
+#         logging.debug ('game.get_legal_moves() = {}, depth = {}'.format(game.get_legal_moves(), depth))
         return max(game.get_legal_moves(), 
                    key=lambda m: self.min_value(game.forecast_move(m), depth, alpha, beta), default=(-1,-1))   
 
