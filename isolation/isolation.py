@@ -271,7 +271,7 @@ class Board(object):
         the location of each player and indicating which cells have been
         blocked, and which remain open.
         """
-        #https://files.slack.com/files-pri/T3TN1HKSM-F6B7GHC7N/pasted_image_at_2017_07_20_02_03_am.png
+    
         p1_loc = self._board_state[-1]
         p2_loc = self._board_state[-2]
 
