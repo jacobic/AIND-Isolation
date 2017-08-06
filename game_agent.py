@@ -9,8 +9,8 @@ __status__ = "In Progress"
 #  Note: this function should be called from within a Player instance as
 #     `self.score()` -- you should not need to call this function directly.
 
-# My apologies. The AIMA textbook talks about some other strategies (like “killer
-# heuristic”, transposition tables, and dynamic move ordering), and there are a
+# My apologies. The AIMA textbook talks about some other strategies (like "killer
+# heuristic", transposition tables, and dynamic move ordering), and there are a
 # number of other tricks and optimizations that have been developed for other 
 # games (like chess or checkers) that might be applicable to Isolation.
 
@@ -71,7 +71,7 @@ def custom_score(game, player):
     w, h = game.width / 2., game.height / 2.
     x1, y1 = game.get_player_location(player)
     x2, y2 = game.get_player_location(game.get_opponent(player))  
-    return float(((w - x1)**2 + (h - y1)**2) - ((w - x2)**2 + (h - y2)**2))
+    return float(((w - x1)**2 + (h - y1)**2))#- ((w - x2)**2 + (h - y2)**2))
 
 
 def custom_score_2(game, player):
@@ -99,7 +99,7 @@ def custom_score_2(game, player):
     # TODO: finish this function!
     own_moves = len(game.get_legal_moves(player))
     opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
-    return own_moves - opp_moves
+    return float(own_moves - opp_moves)
 
 
 def custom_score_3(game, player):
@@ -127,7 +127,7 @@ def custom_score_3(game, player):
     # TODO: finish this function!
     own_moves = len(game.get_legal_moves(player))
     opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
-    return own_moves - opp_moves
+    return float(own_moves - opp_moves)
 
 
 class IsolationPlayer:
@@ -227,7 +227,7 @@ class MinimaxPlayer(IsolationPlayer):
         if self.time_left() < self.TIMER_THRESHOLD:
             raise SearchTimeout()
         if self.terminal_test(game) or depth == 0:     
-            return self.score(game, game._player_1)
+            return self.score(game, self)
         v = float("-inf")
         for a in game.get_legal_moves():
             v = max(v, self.min_value(game.forecast_move(a), depth-1))
@@ -240,10 +240,9 @@ class MinimaxPlayer(IsolationPlayer):
         """
         
         if self.time_left() < self.TIMER_THRESHOLD:
-            return self.score(game, game._player_1)
             raise SearchTimeout()
         if self.terminal_test(game) or depth == 0:     
-            return self.score(game, game._player_1)
+            return self.score(game, self)
         v = float("inf")
         for a in game.get_legal_moves():
             v = min(v, self.max_value(game.forecast_move(a), depth-1))
@@ -293,7 +292,7 @@ class MinimaxPlayer(IsolationPlayer):
         #print(game.to_string())
         # TODO: finish this function!
         return max(game.get_legal_moves(), 
-                   key=lambda m: self.min_value(game.forecast_move(m), self.search_depth), default=(0,0))   
+                   key=lambda m: self.min_value(game.forecast_move(m), self.search_depth-1), default=(0,0))   
 
 
 class AlphaBetaPlayer(IsolationPlayer):
@@ -336,7 +335,7 @@ class AlphaBetaPlayer(IsolationPlayer):
 
         # Initialize the best move so that this function returns something
         # in case the search fails due to timeout
-        depth, best_move = 3, (-1, -1)
+        depth, best_move = 0, (-1, -1)
         board_look_up = {}
         while True:
             try:
@@ -385,7 +384,7 @@ class AlphaBetaPlayer(IsolationPlayer):
         if self.time_left() < self.TIMER_THRESHOLD:
             raise SearchTimeout()
         if self.terminal_test(game) or depth == 0:   
-            return self.score(game, game._player_1)
+            return self.score(game, self)
 
         v = float("-inf")
         for a in game.get_legal_moves():
@@ -405,10 +404,10 @@ class AlphaBetaPlayer(IsolationPlayer):
         if self.time_left() < self.TIMER_THRESHOLD:
             raise SearchTimeout()
         if self.terminal_test(game) or depth == 0:
-            winner = (game.is_winner(game._player_1), game.is_winner(game._player_2))
+#             winner = (game.is_winner(game._player_2), game.is_winner(game._player_2))
 #             logging.warn('terminal_test = {}, winner(p1,p2) = {}, score = {}, depth = {}, '
 #                          .format(self.terminal_test(game), winner, self.score(game, game._player_1), depth))     
-            return self.score(game, game._player_1)
+            return self.score(game, self)
         v = float("inf")
         for a in game.get_legal_moves():
             #logging.debug('max_value = {}'.format(self.max_value(game.forecast_move(a), depth-1, alpha, beta)))
@@ -469,5 +468,5 @@ class AlphaBetaPlayer(IsolationPlayer):
         # TODO: finish this function!
 #         logging.debug ('game.get_legal_moves() = {}, depth = {}'.format(game.get_legal_moves(), depth))
         return max(game.get_legal_moves(), 
-                   key=lambda m: self.min_value(game.forecast_move(m), depth, alpha, beta), default=(-1,-1))   
+                   key=lambda m: self.min_value(game.forecast_move(m), depth-1, alpha, beta), default=(-1,-1))   
 
