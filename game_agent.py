@@ -1,4 +1,3 @@
-from isolation.isolation import Board
 __author__ = "Jacob Ider Chitham"
 __credits__ = ["Udacity"]
 __version__ = "1.0.0-alpha"
@@ -21,6 +20,7 @@ and include the results in your report.
 """
 
 import random
+import math
 # import logging
 # 
 # log_file = 'debug.log'
@@ -62,19 +62,35 @@ def custom_score(game, player):
     # delta player distances to center, penalize peripheral positions, adjust move 
     # heuristics etc. got me to 77%  in one run. these are purely context free 
     # heuristic. if we add look ahead moves etc we can improve it further.
-    # @barni if you look ahead in moves for heuristics that's equivalent of doing a recursive search inside a recursive. imo unnecessary to finish this project, but to each his own. a more efficient way is running some simple policy mapping similar to the case in q learning, by running tons of games, run some statistics, and derive weights to to each cell as a function of the number of move played.
+    # @barni if you look ahead in moves for heuristics that's equivalent of doing 
+    #a recursive search inside a recursive. imo unnecessary to finish this project, 
+    #but to each his own. a more efficient way is running some simple policy mapping similar to the case in q learning, by running tons of games, run some statistics, and derive weights to to each cell as a function of the number of move played.
     # Han Lee 
     # @barni aka supervised learning a policy network, put that down as your 
     # heuristics function. effectively turning a simple search into reinforcement 
     # learning search w/o policy gradients
-#     
-#     w, h = game.width / 2., game.height / 2.
-#     x1, y1 = game.get_player_location(player)
-#     x2, y2 = game.get_player_location(game.get_opponent(player))  
-#     return float((w - x1)**2 + (h - y1)**2) / float((w - x2)**2 + (h - y2)**2)
-    own_moves = len(game.get_legal_moves(player))
-    opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
-    return float(own_moves - opp_moves)
+    
+    #With knights we simply encourage them to go to the center. Standing on the 
+    #edge is a bad idea. Standing in the corner is a terrible idea. Probably 
+    #it was Tartakover who said that "one piece stands badly, the whole game 
+    #stands badly". And knights move slowly.
+    
+    #Most evaluations terms are a linear combination of independent features and associated weights
+    
+    if game.is_loser(player):
+        return float("-inf")
+
+    if game.is_winner(player):
+        return float("inf")
+     
+    w, h = game.width / 2., game.height / 2.
+    x1, y1 = game.get_player_location(player)
+    x2, y2 = game.get_player_location(game.get_opponent(player))
+    d1 = math.sqrt((w - x1)**2 + (h - y1)**2)
+    d2 = math.sqrt((w - x2)**2 + (h - y2)**2) 
+    n1 = len(game.get_legal_moves(player))
+    n2 = len(game.get_legal_moves(game.get_opponent(player)))
+    return  float((d1 * n1) - (d2 * n2))  
 
 def custom_score_2(game, player):
     """Calculate the heuristic value of a game state from the point of view
@@ -98,10 +114,21 @@ def custom_score_2(game, player):
     float
         The heuristic value of the current game state to the specified player.
     """
-    # TODO: finish this function!
-    own_moves = len(game.get_legal_moves(player))
-    opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
-    return float(own_moves - opp_moves)
+    if game.is_loser(player):
+        return float("-inf")
+
+    if game.is_winner(player):
+        return float("inf")
+     
+    w, h = game.width / 2., game.height / 2.
+    x1, y1 = game.get_player_location(player)
+    x2, y2 = game.get_player_location(game.get_opponent(player))
+    d1 = math.sqrt((w - x1)**2 + (h - y1)**2)
+    d2 = math.sqrt((w - x2)**2 + (h - y2)**2)
+    d = math.sqrt((x1 - x2)**2 + (y1 - y2)**2)
+    n1 = len(game.get_legal_moves(player))
+    n2 = len(game.get_legal_moves(game.get_opponent(player))) 
+    return  float(((d1 * n1) - (d2 * n2)) / d)
 
 
 def custom_score_3(game, player):
@@ -127,10 +154,24 @@ def custom_score_3(game, player):
         The heuristic value of the current game state to the specified player.
     """
     # TODO: finish this function!
-    own_moves = len(game.get_legal_moves(player))
-    opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
-    return float(own_moves - opp_moves)
+    if game.is_loser(player):
+        return float("-inf")
 
+    if game.is_winner(player):
+        return float("inf")
+     
+    w, h = game.width / 2., game.height / 2.
+    x1, y1 = game.get_player_location(player)
+    x2, y2 = game.get_player_location(game.get_opponent(player))
+    d1 = math.sqrt((w - x1)**2 + (h - y1)**2)
+    d2 = math.sqrt((w - x2)**2 + (h - y2)**2)
+    d = math.sqrt((x1 - x2)**2 + (y1 - y2)**2)
+    n1 = len(game.get_legal_moves(player))
+    n2 = len(game.get_legal_moves(game.get_opponent(player)))
+    bs =  len(game.get_blank_spaces())    
+    return  float(((d1 * n1) - (d2 * n2)) * (math.sqrt(bs) / (2 * d)))
+#     same = [m for m in game.get_legal_moves(player) for n in game.get_legal_moves(game.get_opponent(player)) if n == m]
+#     return  float(((d1 * n1) - (d2 * n2)) * (math.sqrt(bs) / (2 * d)))
 
 class IsolationPlayer:
     """Base class for minimax and alphabeta agents -- this class is never
@@ -294,7 +335,7 @@ class MinimaxPlayer(IsolationPlayer):
         #print(game.to_string())
         # TODO: finish this function!
         return max(game.get_legal_moves(), 
-                   key=lambda m: self.min_value(game.forecast_move(m), self.search_depth-1), default=(0,0))   
+                   key=lambda m: self.min_value(game.forecast_move(m), self.search_depth-1), default=(-1, -1))   
 
 
 class AlphaBetaPlayer(IsolationPlayer):
@@ -338,7 +379,7 @@ class AlphaBetaPlayer(IsolationPlayer):
         # Initialize the best move so that this function returns something
         # in case the search fails due to timeout
         depth, best_move = 3, (-1, -1)
-        board_look_up = {}
+        #board_look_up = {}
         while True:
             try:
                 # The try/except block will automatically catch the exception
@@ -353,7 +394,7 @@ class AlphaBetaPlayer(IsolationPlayer):
                     move = self.alphabeta(game, depth)
                     if move != (-1, -1):
                         best_move = move
-                        board_look_up[game] = best_move
+                        #board_look_up[game] = best_move
 #                         logging.debug('best_move = {}, adding to lookup'.format(best_move))
                     depth += 1
                     
@@ -466,10 +507,13 @@ class AlphaBetaPlayer(IsolationPlayer):
         """
         if self.time_left() < self.TIMER_THRESHOLD:
             raise SearchTimeout()
- 
-        best_move = (-1,-1)    
+        
+        best_move = (-1, -1) 
+        moves = game.get_legal_moves()
+        if moves:
+            best_move = moves[0]   
         v = float("-inf")
-        for a in game.get_legal_moves():
+        for a in moves[1:]:     
             #logging.debug('min_value = {}'.format(self.min_value(game.forecast_move(a), depth-1, alpha, beta)))
             v_prime = self.min_value(game.forecast_move(a), depth-1, alpha, beta)
             if v < v_prime:
