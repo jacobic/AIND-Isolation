@@ -67,12 +67,14 @@ def custom_score(game, player):
     # @barni aka supervised learning a policy network, put that down as your 
     # heuristics function. effectively turning a simple search into reinforcement 
     # learning search w/o policy gradients
-    
-    w, h = game.width / 2., game.height / 2.
-    x1, y1 = game.get_player_location(player)
-    x2, y2 = game.get_player_location(game.get_opponent(player))  
-    return float(((w - x1)**2 + (h - y1)**2))#- ((w - x2)**2 + (h - y2)**2))
-
+#     
+#     w, h = game.width / 2., game.height / 2.
+#     x1, y1 = game.get_player_location(player)
+#     x2, y2 = game.get_player_location(game.get_opponent(player))  
+#     return float((w - x1)**2 + (h - y1)**2) / float((w - x2)**2 + (h - y2)**2)
+    own_moves = len(game.get_legal_moves(player))
+    opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
+    return float(own_moves - opp_moves)
 
 def custom_score_2(game, player):
     """Calculate the heuristic value of a game state from the point of view
@@ -335,7 +337,7 @@ class AlphaBetaPlayer(IsolationPlayer):
 
         # Initialize the best move so that this function returns something
         # in case the search fails due to timeout
-        depth, best_move = 0, (-1, -1)
+        depth, best_move = 3, (-1, -1)
         board_look_up = {}
         while True:
             try:
@@ -464,9 +466,15 @@ class AlphaBetaPlayer(IsolationPlayer):
         """
         if self.time_left() < self.TIMER_THRESHOLD:
             raise SearchTimeout()
-        
-        # TODO: finish this function!
-#         logging.debug ('game.get_legal_moves() = {}, depth = {}'.format(game.get_legal_moves(), depth))
-        return max(game.get_legal_moves(), 
-                   key=lambda m: self.min_value(game.forecast_move(m), depth-1, alpha, beta), default=(-1,-1))   
-
+ 
+        best_move = (-1,-1)    
+        v = float("-inf")
+        for a in game.get_legal_moves():
+            #logging.debug('min_value = {}'.format(self.min_value(game.forecast_move(a), depth-1, alpha, beta)))
+            v_prime = self.min_value(game.forecast_move(a), depth-1, alpha, beta)
+            if v < v_prime:
+                best_move = a
+                v = v_prime
+            alpha = max(alpha, v)
+#           logging.debug ('game.get_legal_moves() = {}, depth = {}'.format(game.get_legal_moves(), depth))
+        return best_move
