@@ -170,8 +170,51 @@ def custom_score_3(game, player):
     n2 = len(game.get_legal_moves(game.get_opponent(player)))
     bs =  len(game.get_blank_spaces())    
     return  float(((d1 * n1) - (d2 * n2)) * (math.sqrt(bs) / (2 * d)))
+
+def custom_score_4(game, player):
+    """Calculate the heuristic value of a game state from the point of view
+    of the given player.
+
+    Note: this function should be called from within a Player instance as
+    `self.score()` -- you should not need to call this function directly.
+
+    Parameters
+    ----------
+    game : `isolation.Board`
+        An instance of `isolation.Board` encoding the current state of the
+        game (e.g., player locations and blocked cells).
+
+    player : object
+        A player instance in the current game (i.e., an object corresponding to
+        one of the player objects `game.__player_1__` or `game.__player_2__`.)
+
+    Returns
+    -------
+    float
+        The heuristic value of the current game state to the specified player.
+    """
+    # TODO: finish this function!
+    if game.is_loser(player):
+        return float("-inf")
+
+    if game.is_winner(player):
+        return float("inf")
+    m1 = game.get_legal_moves(player)
+    m2 = game.get_legal_moves(game.get_opponent(player))
+    n1 = len(m1)
+    n2 = len(m2)
+    w, h = game.width / 2., game.height / 2.
+    x1, y1 = game.get_player_location(player)
+    x2, y2 = game.get_player_location(game.get_opponent(player))
+    d1 = math.sqrt((w - x1)**2 + (h - y1)**2)
+    d2 = math.sqrt((w - x2)**2 + (h - y2)**2)
+    d = math.sqrt((x1 - x2)**2 + (y1 - y2)**2)
+    s = 8 - len(set(m1) & set(m2))
+    bs =  len(game.get_blank_spaces())    
+    return  float(((d1 * n1) - (d2 * n2)) * (math.sqrt(bs) / (2 * d)))
 #     same = [m for m in game.get_legal_moves(player) for n in game.get_legal_moves(game.get_opponent(player)) if n == m]
 #     return  float(((d1 * n1) - (d2 * n2)) * (math.sqrt(bs) / (2 * d)))
+
 
 class IsolationPlayer:
     """Base class for minimax and alphabeta agents -- this class is never
