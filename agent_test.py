@@ -16,7 +16,7 @@ class IsolationTest(unittest.TestCase):
 
     def setUp(self):
         reload(game_agent)
-        self.player1 = "Player1"
+        self.player1 = "Player1"    
         self.player2 = "Player2"
         self.game = isolation.Board(self.player1, self.player2)
 
