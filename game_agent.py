@@ -514,11 +514,14 @@ class AlphaBetaPlayer(IsolationPlayer):
         if self.time_left() < self.TIMER_THRESHOLD:
             raise SearchTimeout()
         
-        moves = game.get_legal_moves()
-        game_hash = game.hash()
         best_move = (-1, -1)
+        moves = game.get_legal_moves()
+        op_moves = game.get_legal_moves(game.get_opponent())  
+        game_hash = game.hash()
         
         if moves:
+            if len(op_moves == 1) and op_moves[0] in moves:
+                return op_moves[0]  # trap opposite player
             best_move = moves[0]                 
             if game_hash in transposition.keys():
                 best_move = transposition[game_hash]
