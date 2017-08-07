@@ -5,15 +5,6 @@ __maintainer__ = "Jacob Ider Chitham"
 __email__ = "jacobic@hotmail.co.uk"
 __status__ = "In Progress"
 
-#  Note: this function should be called from within a Player instance as
-#     `self.score()` -- you should not need to call this function directly.
-
-# My apologies. The AIMA textbook talks about some other strategies (like "killer
-# heuristic", transposition tables, and dynamic move ordering), and there are a
-# number of other tricks and optimizations that have been developed for other 
-# games (like chess or checkers) that might be applicable to Isolation.
-
-
 """Finish all TODO items in this file to complete the isolation project, then
 test your agent's strength against a set of known agents using tournament.py
 and include the results in your report.
@@ -22,12 +13,12 @@ and include the results in your report.
 import random
 import math
 # import logging
-# 
 # log_file = 'debug.log'
 # log_format = '%(asctime)s - %(levelname)s - %(message)s'
 # log_level = logging.DEBUG
 # logging.basicConfig(filename=log_file,level=log_level,format=log_format)
 # logging.FileHandler(filename=log_file, mode='w')
+transposition = {}
 
 class SearchTimeout(Exception):
     """Subclass base exception for code clarity. """
@@ -57,25 +48,6 @@ def custom_score(game, player):
     float
         The heuristic value of the current game state to the specified player.
     """
-    # TODO: finish this function!
-    
-    # delta player distances to center, penalize peripheral positions, adjust move 
-    # heuristics etc. got me to 77%  in one run. these are purely context free 
-    # heuristic. if we add look ahead moves etc we can improve it further.
-    # @barni if you look ahead in moves for heuristics that's equivalent of doing 
-    #a recursive search inside a recursive. imo unnecessary to finish this project, 
-    #but to each his own. a more efficient way is running some simple policy mapping similar to the case in q learning, by running tons of games, run some statistics, and derive weights to to each cell as a function of the number of move played.
-    # Han Lee 
-    # @barni aka supervised learning a policy network, put that down as your 
-    # heuristics function. effectively turning a simple search into reinforcement 
-    # learning search w/o policy gradients
-    
-    #With knights we simply encourage them to go to the center. Standing on the 
-    #edge is a bad idea. Standing in the corner is a terrible idea. Probably 
-    #it was Tartakover who said that "one piece stands badly, the whole game 
-    #stands badly". And knights move slowly.
-    
-    #Most evaluations terms are a linear combination of independent features and associated weights
     
     if game.is_loser(player):
         return float("-inf")
@@ -86,11 +58,11 @@ def custom_score(game, player):
     w, h = game.width / 2., game.height / 2.
     x1, y1 = game.get_player_location(player)
     x2, y2 = game.get_player_location(game.get_opponent(player))
-    d1 = math.sqrt((w - x1)**2 + (h - y1)**2)
-    d2 = math.sqrt((w - x2)**2 + (h - y2)**2) 
+    d1, d2 = math.hypot(w - x1, h - y1), math.hypot(w - x2, h - y2)
     n1 = len(game.get_legal_moves(player))
     n2 = len(game.get_legal_moves(game.get_opponent(player)))
-    return  float((d1 * n1) - (d2 * n2))  
+    #float((d1 * n1) - (d2 * n2))  
+    return  float(((d1 * n1) - (d2 * n2)) / ((d1 * n1) + (d2 * n2))) 
 
 def custom_score_2(game, player):
     """Calculate the heuristic value of a game state from the point of view
@@ -114,6 +86,7 @@ def custom_score_2(game, player):
     float
         The heuristic value of the current game state to the specified player.
     """
+    
     if game.is_loser(player):
         return float("-inf")
 
@@ -123,12 +96,11 @@ def custom_score_2(game, player):
     w, h = game.width / 2., game.height / 2.
     x1, y1 = game.get_player_location(player)
     x2, y2 = game.get_player_location(game.get_opponent(player))
-    d1 = math.sqrt((w - x1)**2 + (h - y1)**2)
-    d2 = math.sqrt((w - x2)**2 + (h - y2)**2)
-    d = math.sqrt((x1 - x2)**2 + (y1 - y2)**2)
+    d1, d2 = math.hypot(w - x1, h - y1), math.hypot(w - x2, h - y2)
+    d = math.hypot(x2 - x1, y2 - y1)
     n1 = len(game.get_legal_moves(player))
     n2 = len(game.get_legal_moves(game.get_opponent(player))) 
-    return  float(((d1 * n1) - (d2 * n2)) / d)
+    return  float(((d1 * n1) - (d2 * n2)) / ((d1 * n1) + (d2 * n2)) / d)
 
 
 def custom_score_3(game, player):
@@ -163,13 +135,12 @@ def custom_score_3(game, player):
     w, h = game.width / 2., game.height / 2.
     x1, y1 = game.get_player_location(player)
     x2, y2 = game.get_player_location(game.get_opponent(player))
-    d1 = math.sqrt((w - x1)**2 + (h - y1)**2)
-    d2 = math.sqrt((w - x2)**2 + (h - y2)**2)
-    d = math.sqrt((x1 - x2)**2 + (y1 - y2)**2)
+    d1, d2 = math.hypot(w - x1, h - y1), math.hypot(w - x2, h - y2)
+    d = math.hypot(x2 - x1, y2 - y1)
     n1 = len(game.get_legal_moves(player))
     n2 = len(game.get_legal_moves(game.get_opponent(player)))
     bs =  len(game.get_blank_spaces())    
-    return  float(((d1 * n1) - (d2 * n2)) * (math.sqrt(bs) / (2 * d)))
+    return  float(((d1 * n1) - (d2 * n2)) / ((d1 * n1) + (d2 * n2)) * (math.sqrt(bs) / (2 * d)))
 
 def custom_score_4(game, player):
     """Calculate the heuristic value of a game state from the point of view
@@ -209,12 +180,11 @@ def custom_score_4(game, player):
     d1 = math.sqrt((w - x1)**2 + (h - y1)**2)
     d2 = math.sqrt((w - x2)**2 + (h - y2)**2)
     d = math.sqrt((x1 - x2)**2 + (y1 - y2)**2)
-    s = 8 - len(set(m1) & set(m2))
+    # favouring a move which is the same as an availble move of the opponent at 
+    # later times may be beneficial but may be expensive
+    s = 8 - len(set(m1) & set(m2)) 
     bs =  len(game.get_blank_spaces())    
     return  float(((d1 * n1) - (d2 * n2)) * (math.sqrt(bs) / (2 * d)))
-#     same = [m for m in game.get_legal_moves(player) for n in game.get_legal_moves(game.get_opponent(player)) if n == m]
-#     return  float(((d1 * n1) - (d2 * n2)) * (math.sqrt(bs) / (2 * d)))
-
 
 class IsolationPlayer:
     """Base class for minimax and alphabeta agents -- this class is never
@@ -315,8 +285,8 @@ class MinimaxPlayer(IsolationPlayer):
         if self.terminal_test(game) or depth == 0:     
             return self.score(game, self)
         v = float("-inf")
-        for a in game.get_legal_moves():
-            v = max(v, self.min_value(game.forecast_move(a), depth-1))
+        for m in game.get_legal_moves():
+            v = max(v, self.min_value(game.forecast_move(m), depth-1))
         return v
     
     def min_value(self, game, depth):
@@ -330,8 +300,8 @@ class MinimaxPlayer(IsolationPlayer):
         if self.terminal_test(game) or depth == 0:     
             return self.score(game, self)
         v = float("inf")
-        for a in game.get_legal_moves():
-            v = min(v, self.max_value(game.forecast_move(a), depth-1))
+        for m in game.get_legal_moves():
+            v = min(v, self.max_value(game.forecast_move(m), depth-1))
         return v   
     
     def minimax(self, game, depth):
@@ -422,22 +392,15 @@ class AlphaBetaPlayer(IsolationPlayer):
         # Initialize the best move so that this function returns something
         # in case the search fails due to timeout
         depth, best_move = 3, (-1, -1)
-        #board_look_up = {}
         while True:
             try:
                 # The try/except block will automatically catch the exception
-                # raised when the timer is about to expire.
-                
+                # raised when the timer is about to expire.             
                 if not self.terminal_test(game):
-#                     if game in board_look_up.keys():
-#                         best_move = board_look_up[game]
 #                         logging.debug('best_move = {}, fetching from lookup'.format(best_move))   
-#                     else:
-                
                     move = self.alphabeta(game, depth)
                     if move != (-1, -1):
                         best_move = move
-                        #board_look_up[game] = best_move
 #                         logging.debug('best_move = {}, adding to lookup'.format(best_move))
                     depth += 1
                     
@@ -473,9 +436,9 @@ class AlphaBetaPlayer(IsolationPlayer):
             return self.score(game, self)
 
         v = float("-inf")
-        for a in game.get_legal_moves():
+        for m in game.get_legal_moves():
             #logging.debug('min_value = {}'.format(self.min_value(game.forecast_move(a), depth-1, alpha, beta)))
-            v = max(v, self.min_value(game.forecast_move(a), depth-1, alpha, beta))
+            v = max(v, self.min_value(game.forecast_move(m), depth-1, alpha, beta))
             if v >= beta:
                 return v
             alpha = max(alpha, v)
@@ -495,9 +458,9 @@ class AlphaBetaPlayer(IsolationPlayer):
 #                          .format(self.terminal_test(game), winner, self.score(game, game._player_1), depth))     
             return self.score(game, self)
         v = float("inf")
-        for a in game.get_legal_moves():
+        for m in game.get_legal_moves():
             #logging.debug('max_value = {}'.format(self.max_value(game.forecast_move(a), depth-1, alpha, beta)))
-            v = min(v, self.max_value(game.forecast_move(a), depth-1, alpha, beta))
+            v = min(v, self.max_value(game.forecast_move(m), depth-1, alpha, beta))
             if v <= alpha:
                 return v
             beta = min(beta, v)
@@ -551,17 +514,26 @@ class AlphaBetaPlayer(IsolationPlayer):
         if self.time_left() < self.TIMER_THRESHOLD:
             raise SearchTimeout()
         
-        best_move = (-1, -1) 
         moves = game.get_legal_moves()
+        game_hash = game.hash()
+        best_move = (-1, -1)
+        
         if moves:
-            best_move = moves[0]   
-        v = float("-inf")
-        for a in moves[1:]:     
-            #logging.debug('min_value = {}'.format(self.min_value(game.forecast_move(a), depth-1, alpha, beta)))
-            v_prime = self.min_value(game.forecast_move(a), depth-1, alpha, beta)
-            if v < v_prime:
-                best_move = a
-                v = v_prime
-            alpha = max(alpha, v)
-#           logging.debug ('game.get_legal_moves() = {}, depth = {}'.format(game.get_legal_moves(), depth))
+            best_move = moves[0]                 
+            if game_hash in transposition.keys():
+                best_move = transposition[game_hash]
+                i = moves.index(best_move)
+#                 logging.info('LOOK UP: depth = {}, best_move = {}, game_hash ={}'.format(depth, best_move, game_hash))
+                moves[0], moves[i] = moves[i], moves[0]       
+            v = float("-inf")
+            for m in moves:     
+                #logging.debug('min_value = {}'.format(self.min_value(game.forecast_move(a), depth-1, alpha, beta)))
+                v_prime = self.min_value(game.forecast_move(m), depth-1, alpha, beta)
+                if v < v_prime:
+                    best_move = m
+                    transposition[game_hash] = best_move
+#                     logging.info('STORE VAL: depth = {}, best_move = {}, game_hash = {}'.format(depth, best_move, game_hash))
+                    v = v_prime
+                alpha = max(alpha, v)
+    #           logging.debug ('game.get_legal_moves() = {}, depth = {}'.format(game.get_legal_moves(), depth))
         return best_move
