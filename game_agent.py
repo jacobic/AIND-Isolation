@@ -54,23 +54,23 @@ def min_dist_edge(game, coords):
     return min(dist_edge(coords[0], w-1), dist_edge(coords[1], h-1))
 
 def score_border(game, player):
-    moves = game.get_legal_moves()
+    moves = game.get_legal_moves(player)
     score_corn, score_edge = 0, 0 
      
     if board_frac(game) > 0.85:
-        tuning = 4 
+        tuning = 3 
     elif board_frac(game) > 0.5:
         tuning = 2
     else:
         tuning = 1
         
     for m in moves:
-        if (min_dist_corn(game, m) == 1):
+        if (min_dist_corn(game, m) == 0):
             score_corn += 1
-        if (min_dist_edge(game, m) == 1):
+        if (min_dist_edge(game, m) == 0):
             score_edge += 1         
-    score = float(tuning * (0.7 * score_corn) + (0.3 * score_edge))
-#   logging.info('score_corn = {}, score_edge = {}, tuning = {}, score = {}'.format(score_corn, score_edge, tuning, score)) 
+    score = float(10 * tuning * (0.7 * score_corn) + (0.3 * score_edge))
+    #logging.info('score_corn = {}, score_edge = {}, tuning = {}, score = {}'.format(score_corn, score_edge, tuning, score)) 
     return float(score) 
         
 class SearchTimeout(Exception):
@@ -109,7 +109,7 @@ def custom_score(game, player):
         return float("inf")
     
     opponent = game.get_opponent(player)
-    eval_moves = n_moves(game, player) - (2 * n_moves(game, opponent))
+    eval_moves = (5 * n_moves(game, player)) - (10 * n_moves(game, opponent))
     eval_border = score_border(game, player) - score_border(game, opponent)
     
     return float(eval_moves)
@@ -144,9 +144,9 @@ def custom_score_2(game, player):
         return float("inf")
      
     opponent = game.get_opponent(player)
-    eval_moves = n_moves(game, player) - (2 * n_moves(game, opponent))
+    eval_moves = (5 * n_moves(game, player)) - (10 * n_moves(game, opponent))
     eval_border = score_border(game, player) - score_border(game, opponent)
-    return  float(eval_border)
+    return  float(-eval_border)
 
 
 def custom_score_3(game, player):
@@ -178,9 +178,14 @@ def custom_score_3(game, player):
         return float("inf")
     
     opponent = game.get_opponent(player)
-    eval_moves = n_moves(game, player) - (2 * n_moves(game, opponent))
-    eval_border = score_border(game, player) - score_border(game, opponent)  
-    return  float(eval_moves + eval_border)
+    eval_moves = 5 * n_moves(game, player) - (10 * n_moves(game, opponent))
+    eval_border = score_border(game, player) - score_border(game, opponent)      
+#     logging.debug('n_moves1 = {}, n_moves2 = {}, score_border1 = {}, score_border2 = {}'
+#                   .format(n_moves(game, player), n_moves(game, opponent),
+#                           score_border(game, player), score_border(game, opponent)))
+#     logging.debug('eval_moves= {}, eval_border = {}'
+#                   .format(eval_moves, eval_border))
+    return  float(eval_moves - eval_border)
 
 class IsolationPlayer:
     """Base class for minimax and alphabeta agents.
