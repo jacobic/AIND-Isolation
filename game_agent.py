@@ -41,6 +41,11 @@ def dist_cent(game, coords):
     w, h = game_dim(game)
     return math.hypot((w / 2) - coords[0], (h / 2) - coords[1])
 
+def dist_players(game, player):
+    loc_player = loc(game, player)
+    loc_opp = loc(game, game.get_opponent(player))
+    return math.hypot(loc_player[0]-loc_opp[0], loc_player[1]-loc_opp[1])
+
 def corners(game):
     w, h = game_dim(game)
     return cross((0, w-1), (0, h-1))
@@ -81,8 +86,6 @@ def custom_score(game, player):
     """Calculate the heuristic value of a game state from the point of view
     of the given player.
 
-    This is the best heuristic function for this project submission.
-
     Note: this function should be called from within a Player instance as
     `self.score()` -- do not need call this function directly.
 
@@ -101,18 +104,13 @@ def custom_score(game, player):
     float
         The heuristic value of the current game state to the specified player.
     """
-    
     if game.is_loser(player):
         return float("-inf")
 
     if game.is_winner(player):
         return float("inf")
     
-    opponent = game.get_opponent(player)
-    eval_moves = (5 * n_moves(game, player)) - (10 * n_moves(game, opponent))
-    eval_border = score_border(game, player) - score_border(game, opponent)
-    
-    return float(eval_moves)
+    return float(n_moves(game, player) - n_moves(game, player))
 
 def custom_score_2(game, player):
     """Calculate the heuristic value of a game state from the point of view
@@ -136,18 +134,13 @@ def custom_score_2(game, player):
     float
         The heuristic value of the current game state to the specified player.
     """
-    
     if game.is_loser(player):
         return float("-inf")
 
     if game.is_winner(player):
         return float("inf")
-     
-    opponent = game.get_opponent(player)
-    eval_moves = (5 * n_moves(game, player)) - (10 * n_moves(game, opponent))
-    eval_border = score_border(game, player) - score_border(game, opponent)
-    return  float(-eval_border)
-
+    
+    return float(n_moves(game, player) - (1.5 * n_moves(game, player)))
 
 def custom_score_3(game, player):
     """Calculate the heuristic value of a game state from the point of view
@@ -177,15 +170,246 @@ def custom_score_3(game, player):
     if game.is_winner(player):
         return float("inf")
     
+    return float((n_moves(game, player))**2 - ((n_moves(game, player))**2))
+
+def custom_score_4(game, player):
+    """Calculate the heuristic value of a game state from the point of view
+    of the given player.
+
+    Note: this function should be called from within a Player instance as
+    `self.score()` -- do not need call this function directly.
+
+    Parameters
+    ----------
+    game : `isolation.Board`
+        An instance of `isolation.Board` encoding the current state of the
+        game (e.g., player locations and blocked cells).
+
+    player : object
+        A player instance in the current game (i.e., an object corresponding to
+        one of the player objects `game.__player_1__` or `game.__player_2__`.)
+
+    Returns
+    -------
+    float
+        The heuristic value of the current game state to the specified player.
+    """
+    if game.is_loser(player):
+        return float("-inf")
+
+    if game.is_winner(player):
+        return float("inf")
+    
+    return float((n_moves(game, player))**2 - (1.5*((n_moves(game, player))**2)))
+
+def custom_score_5(game, player):
+    """Calculate the heuristic value of a game state from the point of view
+    of the given player.
+
+    Note: this function should be called from within a Player instance as
+    `self.score()` -- do not need call this function directly.
+
+    Parameters
+    ----------
+    game : `isolation.Board`
+        An instance of `isolation.Board` encoding the current state of the
+        game (e.g., player locations and blocked cells).
+
+    player : object
+        A player instance in the current game (i.e., an object corresponding to
+        one of the player objects `game.__player_1__` or `game.__player_2__`.)
+
+    Returns
+    -------
+    float
+        The heuristic value of the current game state to the specified player.
+    """
+    if game.is_loser(player):
+        return float("-inf")
+
+    if game.is_winner(player):
+        return float("inf")
+    
+    return float(dist_players(game, player))
+
+def custom_score_6(game, player):
+    """Calculate the heuristic value of a game state from the point of view
+    of the given player.
+
+    Note: this function should be called from within a Player instance as
+    `self.score()` -- do not need call this function directly.
+
+    Parameters
+    ----------
+    game : `isolation.Board`
+        An instance of `isolation.Board` encoding the current state of the
+        game (e.g., player locations and blocked cells).
+
+    player : object
+        A player instance in the current game (i.e., an object corresponding to
+        one of the player objects `game.__player_1__` or `game.__player_2__`.)
+
+    Returns
+    -------
+    float
+        The heuristic value of the current game state to the specified player.
+    """
+    
+    if game.is_loser(player):
+        return float("-inf")
+
+    if game.is_winner(player):
+        return float("inf")
+     
     opponent = game.get_opponent(player)
-    eval_moves = 5 * n_moves(game, player) - (10 * n_moves(game, opponent))
-    eval_border = score_border(game, player) - score_border(game, opponent)      
-#     logging.debug('n_moves1 = {}, n_moves2 = {}, score_border1 = {}, score_border2 = {}'
-#                   .format(n_moves(game, player), n_moves(game, opponent),
-#                           score_border(game, player), score_border(game, opponent)))
-#     logging.debug('eval_moves= {}, eval_border = {}'
-#                   .format(eval_moves, eval_border))
-    return  float(eval_moves - eval_border)
+    eval_border = score_border(game, player) - score_border(game, opponent)
+    return  float(-eval_border)
+
+
+def custom_score_7(game, player):
+    """Calculate the heuristic value of a game state from the point of view
+    of the given player.
+
+    Note: this function should be called from within a Player instance as
+    `self.score()` -- do not need call this function directly.
+
+    Parameters
+    ----------
+    game : `isolation.Board`
+        An instance of `isolation.Board` encoding the current state of the
+        game (e.g., player locations and blocked cells).
+
+    player : object
+        A player instance in the current game (i.e., an object corresponding to
+        one of the player objects `game.__player_1__` or `game.__player_2__`.)
+
+    Returns
+    -------
+    float
+        The heuristic value of the current game state to the specified player.
+    """
+    if game.is_loser(player):
+        return float("-inf")
+
+    if game.is_winner(player):
+        return float("inf")
+    
+    eval_border = 0
+    opponent = game.get_opponent(player)
+    n1, n2 = n_moves(game, player), n_moves(game, opponent)
+    s1, s2 = score_border(game, player), score_border(game, opponent) 
+    if n1 != 0 and n2 != 0:
+        eval_border = ((s1/n1) - (s2/n2))       
+    return  float(-eval_border)
+
+def custom_score_8(game, player):
+    """Calculate the heuristic value of a game state from the point of view
+    of the given player.
+
+    Note: this function should be called from within a Player instance as
+    `self.score()` -- do not need call this function directly.
+
+    Parameters
+    ----------
+    game : `isolation.Board`
+        An instance of `isolation.Board` encoding the current state of the
+        game (e.g., player locations and blocked cells).
+
+    player : object
+        A player instance in the current game (i.e., an object corresponding to
+        one of the player objects `game.__player_1__` or `game.__player_2__`.)
+
+    Returns
+    -------
+    float
+        The heuristic value of the current game state to the specified player.
+    """
+    if game.is_loser(player):
+        return float("-inf")
+
+    if game.is_winner(player):
+        return float("inf")
+    
+    eval_border = 0
+    opponent = game.get_opponent(player)
+    n1, n2 = n_moves(game, player), n_moves(game, opponent)
+    s1, s2 = score_border(game, player), score_border(game, opponent) 
+    if n1 != 0 and n2 != 0:
+        eval_border = ((s1/n1) - (1.5*(s2/n2)))       
+    return  float(-eval_border)
+
+
+def custom_score_9(game, player):
+    """Calculate the heuristic value of a game state from the point of view
+    of the given player.
+
+    Note: this function should be called from within a Player instance as
+    `self.score()` -- do not need call this function directly.
+
+    Parameters
+    ----------
+    game : `isolation.Board`
+        An instance of `isolation.Board` encoding the current state of the
+        game (e.g., player locations and blocked cells).
+
+    player : object
+        A player instance in the current game (i.e., an object corresponding to
+        one of the player objects `game.__player_1__` or `game.__player_2__`.)
+
+    Returns
+    -------
+    float
+        The heuristic value of the current game state to the specified player.
+    """
+    if game.is_loser(player):
+        return float("-inf")
+
+    if game.is_winner(player):
+        return float("inf")
+    
+    eval_border = 0
+    opponent = game.get_opponent(player)
+    n1, n2 = n_moves(game, player), n_moves(game, opponent)
+    s1, s2 = score_border(game, player), score_border(game, opponent) 
+    if n1 != 0 and n2 != 0:
+        eval_border = (((s1/n1)**2) - ((s2/n2)**2))       
+    return  float(-eval_border)
+
+def custom_score_10(game, player):
+    """Calculate the heuristic value of a game state from the point of view
+    of the given player.
+
+    Note: this function should be called from within a Player instance as
+    `self.score()` -- do not need call this function directly.
+
+    Parameters
+    ----------
+    game : `isolation.Board`
+        An instance of `isolation.Board` encoding the current state of the
+        game (e.g., player locations and blocked cells).
+
+    player : object
+        A player instance in the current game (i.e., an object corresponding to
+        one of the player objects `game.__player_1__` or `game.__player_2__`.)
+
+    Returns
+    -------
+    float
+        The heuristic value of the current game state to the specified player.
+    """
+    if game.is_loser(player):
+        return float("-inf")
+
+    if game.is_winner(player):
+        return float("inf")
+    
+    eval_border = 0
+    opponent = game.get_opponent(player)
+    n1, n2 = n_moves(game, player), n_moves(game, opponent)
+    s1, s2 = score_border(game, player), score_border(game, opponent) 
+    if n1 != 0 and n2 != 0:
+        eval_border = (((s1/n1)**2) - (1.5*((s2/n2)**2)))       
+    return  float(-eval_border)
 
 class IsolationPlayer:
     """Base class for minimax and alphabeta agents.
