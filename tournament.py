@@ -14,6 +14,9 @@ order corrects for imbalances due to both starting position and initiative.
 import itertools
 import random
 import warnings
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 from collections import namedtuple
 
@@ -21,9 +24,12 @@ from isolation import Board
 from sample_players import (RandomPlayer, open_move_score,
                             improved_score, center_score)
 from game_agent import (MinimaxPlayer, AlphaBetaPlayer, custom_score,
-                        custom_score_2, custom_score_3)
+                        custom_score_2, custom_score_3, custom_score_4, 
+                        custom_score_5, custom_score_6, custom_score_7, 
+                        custom_score_8, custom_score_9, custom_score_10,
+                        custom_score_11, custom_score_12,custom_score_13)
 
-NUM_MATCHES = 10  # number of matches against each opponent (default = 5)
+NUM_MATCHES = 1  # number of matches against each opponent (default = 5)
 TIME_LIMIT = 150  # number of milliseconds before timeout
 
 DESCRIPTION = """
@@ -84,8 +90,11 @@ def play_matches(cpu_agents, test_agents, num_matches):
     total_forfeits = 0.
     total_matches = 2 * num_matches * len(cpu_agents)
 
-    print("\n{:^9}{:^13}".format("Match #", "Opponent") + ''.join(['{:^13}'.format(x[1].name) for x in enumerate(test_agents)]))
-    print("{:^9}{:^13} ".format("", "") +  ' '.join(['{:^5}| {:^5}'.format("Won", "Lost") for x in enumerate(test_agents)]))
+    print("\n{:^9}{:^13}".format("Match #", "Opponent") + ''.join(['{:^5}'.format(x[1].name) for x in enumerate(test_agents)]))
+    #print("{:^9}{:^13} ".format("", "") +  ' '.join(['{:^5}| {:^5}'.format("Won", "Lost") for x in enumerate(test_agents)]))
+    cols = [x[1].name for x in enumerate(test_agents)]
+    idxs = [x[1].name for x in enumerate(cpu_agents)]
+    df = pd.DataFrame(index=idxs, columns=cols)
 
     for idx, agent in enumerate(cpu_agents):
         wins = {key: 0 for (key, value) in test_agents}
@@ -100,11 +109,12 @@ def play_matches(cpu_agents, test_agents, num_matches):
         _total = 2 * num_matches
         round_totals = sum([[wins[agent.player], _total - wins[agent.player]]
                             for agent in test_agents], [])
-        print(' ' + ' '.join([
-            '{:^5}| {:^5}'.format(
-                round_totals[i],round_totals[i+1]
-            ) for i in range(0, len(round_totals), 2)
-        ]))
+        
+        for i in range(0, len(round_totals), 2):
+            win_frac = (round_totals[i] / (round_totals[i] + round_totals[i+1]))
+            df[cols[int(i/2)]][agent[1]] = win_frac
+            print(' {:.2f}'.format(win_frac), end='')
+        print('')
 
     print("-" * 74)
     print('{:^9}{:^13}'.format("", "Win Rate:") +
@@ -123,35 +133,51 @@ def play_matches(cpu_agents, test_agents, num_matches):
         print(("\nYour ID search forfeited {} games while there were still " +
                "legal moves available to play.\n").format(total_forfeits))
 
+    df = df[df.columns].astype(float)
+    return df
 
 def main():
 
     # Define two agents to compare -- these agents will play from the same
     # starting position against the same adversaries in the tournament
     test_agents = [
-        Agent(AlphaBetaPlayer(score_fn=improved_score), "AB_Improved"),
-        Agent(AlphaBetaPlayer(score_fn=custom_score), "AB_Custom"),
-        Agent(AlphaBetaPlayer(score_fn=custom_score_2), "AB_Custom_2"),
-        Agent(AlphaBetaPlayer(score_fn=custom_score_3), "AB_Custom_3")
+        Agent(AlphaBetaPlayer(score_fn=improved_score), "ABI"),
+        Agent(AlphaBetaPlayer(score_fn=custom_score), "AB1"),
+        Agent(AlphaBetaPlayer(score_fn=custom_score_2), "AB2"),
+        Agent(AlphaBetaPlayer(score_fn=custom_score_3), "AB3"),
+        Agent(AlphaBetaPlayer(score_fn=custom_score_4), "AB4"),
+        Agent(AlphaBetaPlayer(score_fn=custom_score_5), "AB5"),
+        Agent(AlphaBetaPlayer(score_fn=custom_score_6), "AB6"),
+        Agent(AlphaBetaPlayer(score_fn=custom_score_7), "AB7"),
+        Agent(AlphaBetaPlayer(score_fn=custom_score_8), "AB8"),
+        Agent(AlphaBetaPlayer(score_fn=custom_score_9), "AB9"),
+        Agent(AlphaBetaPlayer(score_fn=custom_score_10), "AB10"),
+        Agent(AlphaBetaPlayer(score_fn=custom_score_11), "AB11"),
+        Agent(AlphaBetaPlayer(score_fn=custom_score_12), "AB12"),
+        Agent(AlphaBetaPlayer(score_fn=custom_score_13), "AB13")
     ]
 
     # Define a collection of agents to compete against the test agents
     cpu_agents = [
-#         Agent(RandomPlayer(), "Random"),
-        Agent(MinimaxPlayer(score_fn=open_move_score), "MM_Open"),
-        Agent(MinimaxPlayer(score_fn=center_score), "MM_Center"),
-        Agent(MinimaxPlayer(score_fn=improved_score), "MM_Improved"),
-        Agent(AlphaBetaPlayer(score_fn=open_move_score), "AB_Open"),
-        Agent(AlphaBetaPlayer(score_fn=center_score), "AB_Center"),
-        Agent(AlphaBetaPlayer(score_fn=improved_score), "AB_Improved")
+        Agent(RandomPlayer(), "Random"),
+        Agent(MinimaxPlayer(score_fn=open_move_score), "MMO"),
+        Agent(MinimaxPlayer(score_fn=center_score), "MMC"),
+        Agent(MinimaxPlayer(score_fn=improved_score), "MMI"),
+        Agent(AlphaBetaPlayer(score_fn=open_move_score), "ABO"),
+        Agent(AlphaBetaPlayer(score_fn=center_score), "ABC"),
+        Agent(AlphaBetaPlayer(score_fn=improved_score), "ABI")
     ]
 
     print(DESCRIPTION)
-    print("{:^74}".format("*************************"))
-    print("{:^74}".format("Playing Matches"))
-    print("{:^74}".format("*************************"))
-    play_matches(cpu_agents, test_agents, NUM_MATCHES)
-
-
+    print("{:^74}".format("**************************************************"))
+#     print("{:^74}".format("Playing Matches"))
+    title = "{} {} {}".format("Playing", (2*NUM_MATCHES), "Matches" )
+    print("{:^74}".format(title))
+    print("{:^74}".format("**************************************************"))
+    results = play_matches(cpu_agents, test_agents, NUM_MATCHES)
+    sns.heatmap(results, annot=True)
+    plt.savefig('/Users/jacobic/ai-nanodegree/t1/AIND-Isolation/heuristic-plot.png')
+    plt.show()
+    
 if __name__ == "__main__":
     main()
