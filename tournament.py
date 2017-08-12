@@ -29,7 +29,7 @@ from game_agent import (MinimaxPlayer, AlphaBetaPlayer, custom_score,
                         custom_score_8, custom_score_9, custom_score_10,
                         custom_score_11, custom_score_12,custom_score_13)
 
-NUM_MATCHES = 1  # number of matches against each opponent (default = 5)
+NUM_MATCHES = 20  # number of matches against each opponent (default = 5)
 TIME_LIMIT = 150  # number of milliseconds before timeout
 
 DESCRIPTION = """
@@ -41,7 +41,6 @@ game_agent.py.
 """
 
 Agent = namedtuple("Agent", ["player", "name"])
-
 
 def play_round(cpu_agent, test_agents, win_counts, num_matches):
     """Compare the test agents to the cpu agent in "fair" matches.
@@ -90,11 +89,12 @@ def play_matches(cpu_agents, test_agents, num_matches):
     total_forfeits = 0.
     total_matches = 2 * num_matches * len(cpu_agents)
 
-    print("\n{:^9}{:^13}".format("Match #", "Opponent") + ''.join(['{:^5}'.format(x[1].name) for x in enumerate(test_agents)]))
+    print("\n{:^9}{:^13}".format("#", "Opp") + ''.join(['{:^5}'.format(x[1].name) for x in enumerate(test_agents)]))
     #print("{:^9}{:^13} ".format("", "") +  ' '.join(['{:^5}| {:^5}'.format("Won", "Lost") for x in enumerate(test_agents)]))
     cols = [x[1].name for x in enumerate(test_agents)]
     idxs = [x[1].name for x in enumerate(cpu_agents)]
     df = pd.DataFrame(index=idxs, columns=cols)
+    df = df.append(pd.DataFrame(index=['AVG'], columns=cols))
 
     for idx, agent in enumerate(cpu_agents):
         wins = {key: 0 for (key, value) in test_agents}
@@ -116,12 +116,16 @@ def play_matches(cpu_agents, test_agents, num_matches):
             print(' {:.2f}'.format(win_frac), end='')
         print('')
 
-    print("-" * 74)
+    win_rates = []
+    for x in enumerate(test_agents):
+        win_rates.append(total_wins[x[1].player] / total_matches)
+        
+    print("-" * 74)    
     print('{:^9}{:^13}'.format("", "Win Rate:") +
         ''.join([
-            '{:^13}'.format(
-                "{:.1f}%".format(100 * total_wins[x[1].player] / total_matches)
-            ) for x in enumerate(test_agents)
+            '{:^5}'.format(
+                "{:.2f}".format(wr)
+            ) for wr in win_rates
     ]))
 
     if total_timeouts:
@@ -133,24 +137,26 @@ def play_matches(cpu_agents, test_agents, num_matches):
         print(("\nYour ID search forfeited {} games while there were still " +
                "legal moves available to play.\n").format(total_forfeits))
 
+    df.loc['AVG'] = win_rates
     df = df[df.columns].astype(float)
-    return df
+    df.to_csv('/Users/jacobic/ai-nanodegree/t1/AIND-Isolation/heuristic_data.csv')
+    return df.T
 
 def main():
 
     # Define two agents to compare -- these agents will play from the same
     # starting position against the same adversaries in the tournament
     test_agents = [
-        Agent(AlphaBetaPlayer(score_fn=improved_score), "ABI"),
-        Agent(AlphaBetaPlayer(score_fn=custom_score), "AB1"),
-        Agent(AlphaBetaPlayer(score_fn=custom_score_2), "AB2"),
-        Agent(AlphaBetaPlayer(score_fn=custom_score_3), "AB3"),
-        Agent(AlphaBetaPlayer(score_fn=custom_score_4), "AB4"),
-        Agent(AlphaBetaPlayer(score_fn=custom_score_5), "AB5"),
-        Agent(AlphaBetaPlayer(score_fn=custom_score_6), "AB6"),
-        Agent(AlphaBetaPlayer(score_fn=custom_score_7), "AB7"),
-        Agent(AlphaBetaPlayer(score_fn=custom_score_8), "AB8"),
-        Agent(AlphaBetaPlayer(score_fn=custom_score_9), "AB9"),
+        Agent(AlphaBetaPlayer(score_fn=improved_score), "ABIM"),
+        Agent(AlphaBetaPlayer(score_fn=custom_score), "AB01"),
+        Agent(AlphaBetaPlayer(score_fn=custom_score_2), "AB02"),
+        Agent(AlphaBetaPlayer(score_fn=custom_score_3), "AB03"),
+        Agent(AlphaBetaPlayer(score_fn=custom_score_4), "AB04"),
+        Agent(AlphaBetaPlayer(score_fn=custom_score_5), "AB05"),
+        Agent(AlphaBetaPlayer(score_fn=custom_score_6), "AB06"),
+        Agent(AlphaBetaPlayer(score_fn=custom_score_7), "AB07"),
+        Agent(AlphaBetaPlayer(score_fn=custom_score_8), "AB08"),
+        Agent(AlphaBetaPlayer(score_fn=custom_score_9), "AB09"),
         Agent(AlphaBetaPlayer(score_fn=custom_score_10), "AB10"),
         Agent(AlphaBetaPlayer(score_fn=custom_score_11), "AB11"),
         Agent(AlphaBetaPlayer(score_fn=custom_score_12), "AB12"),
@@ -159,13 +165,13 @@ def main():
 
     # Define a collection of agents to compete against the test agents
     cpu_agents = [
-        Agent(RandomPlayer(), "Random"),
+        Agent(RandomPlayer(),"RAN"),
         Agent(MinimaxPlayer(score_fn=open_move_score), "MMO"),
         Agent(MinimaxPlayer(score_fn=center_score), "MMC"),
         Agent(MinimaxPlayer(score_fn=improved_score), "MMI"),
         Agent(AlphaBetaPlayer(score_fn=open_move_score), "ABO"),
         Agent(AlphaBetaPlayer(score_fn=center_score), "ABC"),
-        Agent(AlphaBetaPlayer(score_fn=improved_score), "ABI")
+        Agent(AlphaBetaPlayer(score_fn=improved_score), "ABIM")
     ]
 
     print(DESCRIPTION)
@@ -175,9 +181,12 @@ def main():
     print("{:^74}".format(title))
     print("{:^74}".format("**************************************************"))
     results = play_matches(cpu_agents, test_agents, NUM_MATCHES)
-    sns.heatmap(results, annot=True)
-    plt.savefig('/Users/jacobic/ai-nanodegree/t1/AIND-Isolation/heuristic-plot.png')
+    sns.heatmap(results, annot=True, fmt='.2f', sqauare=True, cmap="YlGnBu", cbar_kws={'label': 'Win-rate'})
+    plt.title('Heuristic Evaluation Function Analysis - {} Games'.format((2*NUM_MATCHES)))
+    plt.ylabel('Test Agents')
+    plt.xlabel('CPU Agents')
+    plt.savefig('/Users/jacobic/ai-nanodegree/t1/AIND-Isolation/heuristic_plot.png')
     plt.show()
-    
+
 if __name__ == "__main__":
     main()
