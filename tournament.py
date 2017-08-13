@@ -11,6 +11,7 @@ players, and the     players play each match twice -- once as the first player a
 once as the second player.  Randomizing the openings and switching the player
 order corrects for imbalances due to both starting position and initiative.
 """
+import numpy as np
 import itertools
 import random
 import warnings
@@ -27,7 +28,9 @@ from game_agent import (MinimaxPlayer, AlphaBetaPlayer, custom_score,
                         custom_score_2, custom_score_3, custom_score_4, 
                         custom_score_5, custom_score_6, custom_score_7, 
                         custom_score_8, custom_score_9, custom_score_10,
-                        custom_score_11, custom_score_12,custom_score_13)
+                        custom_score_11, custom_score_12,custom_score_13,
+                        custom_score_14, custom_score_15,custom_score_16,
+                        custom_score_17)
 
 NUM_MATCHES = 20  # number of matches against each opponent (default = 5)
 TIME_LIMIT = 150  # number of milliseconds before timeout
@@ -138,6 +141,8 @@ def play_matches(cpu_agents, test_agents, num_matches):
                "legal moves available to play.\n").format(total_forfeits))
 
     df.loc['AVG'] = win_rates
+    df['AVG'] = df.mean(axis=1)
+    df['AVG']['AVG'] = np.nan
     df = df[df.columns].astype(float)
     df.to_csv('/Users/jacobic/ai-nanodegree/t1/AIND-Isolation/heuristic_data.csv')
     return df.T
@@ -160,7 +165,11 @@ def main():
         Agent(AlphaBetaPlayer(score_fn=custom_score_10), "AB10"),
         Agent(AlphaBetaPlayer(score_fn=custom_score_11), "AB11"),
         Agent(AlphaBetaPlayer(score_fn=custom_score_12), "AB12"),
-        Agent(AlphaBetaPlayer(score_fn=custom_score_13), "AB13")
+        Agent(AlphaBetaPlayer(score_fn=custom_score_13), "AB13"),
+        Agent(AlphaBetaPlayer(score_fn=custom_score_14), "AB14"),
+        Agent(AlphaBetaPlayer(score_fn=custom_score_15), "AB15"),
+        Agent(AlphaBetaPlayer(score_fn=custom_score_16), "AB16"),
+        Agent(AlphaBetaPlayer(score_fn=custom_score_17), "AB17")
     ]
 
     # Define a collection of agents to compete against the test agents
@@ -176,17 +185,17 @@ def main():
 
     print(DESCRIPTION)
     print("{:^74}".format("**************************************************"))
-#     print("{:^74}".format("Playing Matches"))
     title = "{} {} {}".format("Playing", (2*NUM_MATCHES), "Matches" )
     print("{:^74}".format(title))
     print("{:^74}".format("**************************************************"))
     results = play_matches(cpu_agents, test_agents, NUM_MATCHES)
-    sns.heatmap(results, annot=True, fmt='.2f', sqauare=True, cmap="YlGnBu", 
+    sns.heatmap(results, annot=True, fmt='.2f', cmap="YlGnBu", 
                 cbar_kws={'label': 'Win-rate'})
     plt.title('Heuristic Evaluation Function Analysis - {} Games'
               .format((2*NUM_MATCHES)))
     plt.ylabel('Test Agents')
     plt.xlabel('CPU Agents')
+    plt.yticks(rotation=0)
     plt.savefig('/Users/jacobic/ai-nanodegree/t1/AIND-Isolation/heuristic_plot.png')
     plt.show()
 
