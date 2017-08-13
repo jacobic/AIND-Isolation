@@ -181,8 +181,10 @@ def main():
     print("{:^74}".format(title))
     print("{:^74}".format("**************************************************"))
     results = play_matches(cpu_agents, test_agents, NUM_MATCHES)
-    sns.heatmap(results, annot=True, fmt='.2f', sqauare=True, cmap="YlGnBu", cbar_kws={'label': 'Win-rate'})
-    plt.title('Heuristic Evaluation Function Analysis - {} Games'.format((2*NUM_MATCHES)))
+    sns.heatmap(results, annot=True, fmt='.2f', sqauare=True, cmap="YlGnBu", 
+                cbar_kws={'label': 'Win-rate'})
+    plt.title('Heuristic Evaluation Function Analysis - {} Games'
+              .format((2*NUM_MATCHES)))
     plt.ylabel('Test Agents')
     plt.xlabel('CPU Agents')
     plt.savefig('/Users/jacobic/ai-nanodegree/t1/AIND-Isolation/heuristic_plot.png')
