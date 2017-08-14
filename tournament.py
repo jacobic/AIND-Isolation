@@ -32,7 +32,7 @@ from game_agent import (MinimaxPlayer, AlphaBetaPlayer, custom_score,
                         custom_score_14, custom_score_15,custom_score_16,
                         custom_score_17)
 
-NUM_MATCHES = 20  # number of matches against each opponent (default = 5)
+NUM_MATCHES = 50  # number of matches against each opponent (default = 5)
 TIME_LIMIT = 150  # number of milliseconds before timeout
 
 DESCRIPTION = """
