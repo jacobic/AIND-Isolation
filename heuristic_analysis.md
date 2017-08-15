@@ -43,29 +43,30 @@ As the game terminates when there is no more possible moves available to an agen
 * The location of a given player. $$l = (l_x,l_y)$$
 * The distance from a given player to the centre of the game board. $$d_{c} = \|l - l_{c}\|$$
 
-However, as the board is square, the Euclidean distance from the centre is not as useful as it would be if the board was circular. The reason for this is due to the fact that an agent in a corner (which would only have a slightly larger $d_c$ value) is in a substantially worse position than an agent at the edge of the board.
+However, as the board is square, the Euclidean distance from the centre is not as useful as it would be if the board was circular. The reason for this is due to the fact that an agent in a corner (which would only have a slightly larger $d_c$ value) is in a substantially worse position than an agent at the edge of the board. This is the reason for the exploratory analysis with the score border $s_b$ feature, although it proved to have too many paramters to be able to efficiently tune.
 
 * The distance from a given player to the nearest vertex (corner) of the game board. $$d_{v}^{min} = min(\|l - l_{v}\|)$$ 
 * The distance from a given player to the nearest edge (side) of the game board. $$d_{e}^{min} = min(\|l - l_{e}\|)$$
 * A summary score for a player's legal moves that are located at vertices of the board. $$s_v = \sum^{moves} bool(l_{move} = l_v)$$
 * A summary score for a player's legal moves that are located at edges of the board. $$s_e = \sum^{moves} bool(l_{move} = l_e)$$
 *  The fraction of the board that is currently not blocked due to previous moves of both players. $$f$$
-* A summary score for a player's legal moves that are at on the circumference of the board. $$s_{b} = 10\tau\times(0.7s_v + 0.3s_e)$$ with a tuning factor  $$\tau = \{1, 2, 3\} \{0 < f < 0.50, f > 0.50, f > 0.85\}$$ respectively.
+* A summary score for a player's legal moves that are at on the circumference of the board. $$s_{b} = 10\tau\times(0.7s_v + 0.3s_e)$$ with a tuning factor  $\tau = \{1, 2, 3\}$ when $\{0 < f < 0.50, f > 0.50, f > 0.85\}$ respectively.
 
 Another promising tactic of successful agents is able to coerce their opponent into positions which offer a sub optimal number of possible future moves. One way to achieve this is to "chase" the opponent by occupying or blocking spaces that the opponent agent would of otherwise been able to move into.
 
 * The distance between a given player and its opponent. $$d_{p} = \|l - l^{\prime}\|$$
 
-N.B. $$\|\sigma - \gamma\|$$ represents the Euclidean distance between two locations on the board, $$\sigma = (\sigma_x, \sigma_y)$$, $$\gamma = (\gamma_x, \gamma_y)$$.
+N.B. $\|\sigma - \gamma\|$ represents the Euclidean distance between two locations on the board, $\sigma = (\sigma_x, \sigma_y)$, $\gamma = (\gamma_x, \gamma_y)$.
 
 Combing the features of the game board from the perspective of an agent as well as its opponent can capture (almost) twice as much useful information for heuristic evaluation functions.  After all...if the environment is fully observable it makes sense for agents to utilise as much information as possible to make more accurate estimate.
 
-It is for this reason that many of the analysed heuristic evaluation functions involve features from both player's point of view. Features of an opponent player are denoted with the use of primed variables. For instance if $$\beta$$ is feature of a player, $$\beta^{\prime}$$ represents the respective opponent feature.  
+It is for this reason that many of the analysed heuristic evaluation functions involve features from both player's point of view. Features of an opponent player are denoted with the use of primed variables. For instance if $\beta$ is feature of a player, $\beta^{\prime}$ represents the respective opponent feature.  
 
 ## Heuristic Evaluation Function Comparative Analysis
 
+17 different heuristic were chosen through experimentation and exploration by combining the features mentioned in the previous section. 40 games were played per agent and the average win-rates recorded below to determine the strongest heuristic. The forms of each heuristic is shown below and the results are shown on the following page.
 
-| name | winrate | rank |                           form                           |
+<!-- | name | winrate | rank |                           form                           |
 |:----:|---------|------|:--------------------------------------------------------:|
 | AB01 |         |      |                     $n - n^{\prime}$                     |
 | AB02 |         |      |                  $n - \alpha n^{\prime}$                 |
@@ -80,9 +81,36 @@ It is for this reason that many of the analysed heuristic evaluation functions i
 | AB11 |         |      |                   $d_c - d_c^{\prime}$                   |
 | AB12 |         |      |                $d_c - \alpha d_c^{\prime}$               |
 | AB13 |         |      |                          $d_{p}$                         |
-| AB14 |         |      |                                                          |
+| AB14 |         |      |                                                     $d_p (n - n^{\prime})$      | 
+| AB15 |         |      |                                                     $d_p (n - \alpha n^{\prime})$      | 
+| AB16 |         |      |                                                     $d_p (n^2 - n^{\prime 2})$      |
+| AB17 |         |      |                                                     $d_p (n^2 - \alpha n^{\prime 2})$      |    -->
 
-![Comparative analysis of various heuristic evaluation functions expressed as a heatmap of win-rates. The column $AVG$ indicates the mean across each CPU Agent, this is used as the primary indicator of performance.](heuristic_plot.png)
+![Comparative analysis of various heuristic evaluation functions expressed as a heatmap of win-rates. The column $AVG$ indicates the mean across each CPU Agent, this is used as the primary indicator of performance. The forms of each Test-agent heuristic evaluation is shown in the following table. Please note $\alpha = 1.5$ consistently across all forms](heuristic_plot_40.png)
+
+| Agent |                           Form                           |
+|:----:|---------|------|:--------------------------------------------------------:|
+| AB01 |                     $n - n^{\prime}$                     |
+| AB02 |                  $n - \alpha n^{\prime}$                 |
+| AB03 |                   $n^2 - n^{\prime 2}$                   |
+| AB04 |                $n^2 - \alpha n^{\prime 2}$               |
+| AB05 |                   $s_b^{\prime} - s_b$                   |
+| AB06 |         ${s_b^{\prime}}/{n^{\prime}} - {s_b}/{n}$        |
+| AB07 |     $\alpha {s_b^{\prime}}/{n^{\prime}} - {s_b}/{n}$     |
+| AB08 |     $({s_b^{\prime}}/{n^{\prime}})^2 - ({s_b}/{n})^2$    |
+| AB09 | $\alpha ({s_b^{\prime}}/{n^{\prime}})^2 - ({s_b}/{n})^2$ |
+| AB10 |                           $d_c$                          |
+| AB11 |                   $d_c - d_c^{\prime}$                   |
+| AB12 |                $d_c - \alpha d_c^{\prime}$               |
+| AB13 |                          $d_{p}$                         |
+| AB14 |                                                     $d_p (n - n^{\prime})$      | 
+| AB15 |                                                     $d_p (n - \alpha n^{\prime})$      | 
+| AB16 |                                                     $d_p (n^2 - n^{\prime 2})$      |
+| AB17 |                                                     $d_p (n^2 - \alpha n^{\prime 2})$      | 
+
+Of the 17 evaluation functions, AB15, AB16 and AB3 proved to be the strongest. These were chosen for the final submission. 
+
+
 
 <!-- {{ site.url }}/images/heuristic_plot.png -->
 
@@ -102,9 +130,9 @@ $d_c - d_c^{\prime}$
 $d_c - \alpha d_c^{\prime}$
 $d_{p}$
  -->
-
+<!-- 
 # Discussion
 
-Reinforcement learning is the way forward
+Reinforcement learning is the way forward -->
 
 
