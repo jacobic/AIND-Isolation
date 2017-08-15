@@ -25,14 +25,9 @@ from isolation import Board
 from sample_players import (RandomPlayer, open_move_score,
                             improved_score, center_score)
 from game_agent import (MinimaxPlayer, AlphaBetaPlayer, custom_score,
-                        custom_score_2, custom_score_3, custom_score_4, 
-                        custom_score_5, custom_score_6, custom_score_7, 
-                        custom_score_8, custom_score_9, custom_score_10,
-                        custom_score_11, custom_score_12,custom_score_13,
-                        custom_score_14, custom_score_15,custom_score_16,
-                        custom_score_17)
+                        custom_score_2, custom_score_3)
 
-NUM_MATCHES = 50  # number of matches against each opponent (default = 5)
+NUM_MATCHES = 5  # number of matches against each opponent (default = 5)
 TIME_LIMIT = 150  # number of milliseconds before timeout
 
 DESCRIPTION = """
@@ -155,21 +150,7 @@ def main():
         Agent(AlphaBetaPlayer(score_fn=improved_score), "ABIM"),
         Agent(AlphaBetaPlayer(score_fn=custom_score), "AB01"),
         Agent(AlphaBetaPlayer(score_fn=custom_score_2), "AB02"),
-        Agent(AlphaBetaPlayer(score_fn=custom_score_3), "AB03"),
-        Agent(AlphaBetaPlayer(score_fn=custom_score_4), "AB04"),
-        Agent(AlphaBetaPlayer(score_fn=custom_score_5), "AB05"),
-        Agent(AlphaBetaPlayer(score_fn=custom_score_6), "AB06"),
-        Agent(AlphaBetaPlayer(score_fn=custom_score_7), "AB07"),
-        Agent(AlphaBetaPlayer(score_fn=custom_score_8), "AB08"),
-        Agent(AlphaBetaPlayer(score_fn=custom_score_9), "AB09"),
-        Agent(AlphaBetaPlayer(score_fn=custom_score_10), "AB10"),
-        Agent(AlphaBetaPlayer(score_fn=custom_score_11), "AB11"),
-        Agent(AlphaBetaPlayer(score_fn=custom_score_12), "AB12"),
-        Agent(AlphaBetaPlayer(score_fn=custom_score_13), "AB13"),
-        Agent(AlphaBetaPlayer(score_fn=custom_score_14), "AB14"),
-        Agent(AlphaBetaPlayer(score_fn=custom_score_15), "AB15"),
-        Agent(AlphaBetaPlayer(score_fn=custom_score_16), "AB16"),
-        Agent(AlphaBetaPlayer(score_fn=custom_score_17), "AB17")
+        Agent(AlphaBetaPlayer(score_fn=custom_score_3), "AB03")    
     ]
 
     # Define a collection of agents to compete against the test agents
