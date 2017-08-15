@@ -1,4 +1,5 @@
 ---
+layout: post
 title:    Isolation AI agents - Heuristic Evaluation Function Analysis
 project:  Artificial Intelligence Nanodegree
 author:   Jacob Ider Chitham
@@ -40,12 +41,12 @@ As the game terminates when there is no more possible moves available to an agen
 
 * The number of moves available to player at current board state. $$n$$
 * The location of a given player. $$l = (l_x,l_y)$$
-* The distance from a given player to the centre of the game board. $$d_{c} = |l - l_{c}|$$
+* The distance from a given player to the centre of the game board. $$d_{c} = \|l - l_{c}\|$$
 
 However, as the board is square, the Euclidean distance from the centre is not as useful as it would be if the board was circular. The reason for this is due to the fact that an agent in a corner (which would only have a slightly larger $d_c$ value) is in a substantially worse position than an agent at the edge of the board.
 
-* The distance from a given player to the nearest vertex (corner) of the game board. $$d_{v}^{min} = min(|l - l_{v}|)$$ 
-* The distance from a given player to the nearest edge (side) of the game board. $$d_{e}^{min} = min(|l - l_{e}|)$$
+* The distance from a given player to the nearest vertex (corner) of the game board. $$d_{v}^{min} = min(\|l - l_{v}\|)$$ 
+* The distance from a given player to the nearest edge (side) of the game board. $$d_{e}^{min} = min(\|l - l_{e}\|)$$
 * A summary score for a player's legal moves that are located at vertices of the board. $$s_v = \sum^{moves} bool(l_{move} = l_v)$$
 * A summary score for a player's legal moves that are located at edges of the board. $$s_e = \sum^{moves} bool(l_{move} = l_e)$$
 *  The fraction of the board that is currently not blocked due to previous moves of both players. $$f$$
@@ -53,13 +54,13 @@ However, as the board is square, the Euclidean distance from the centre is not a
 
 Another promising tactic of successful agents is able to coerce their opponent into positions which offer a sub optimal number of possible future moves. One way to achieve this is to "chase" the opponent by occupying or blocking spaces that the opponent agent would of otherwise been able to move into.
 
-* The distance between a given player and its opponent. $$d_{p} = |l - l^{\prime}|$$
+* The distance between a given player and its opponent. $$d_{p} = \|l - l^{\prime}\|$$
 
-N.B $|\sigma - \gamma|$ represents the Euclidean distance between two locations on the board, $\sigma = (\sigma_x, \sigma_y)$, $\gamma = (\gamma_x, \gamma_y)$.
+N.B. $$\|\sigma - \gamma\|$$ represents the Euclidean distance between two locations on the board, $$\sigma = (\sigma_x, \sigma_y)$$, $$\gamma = (\gamma_x, \gamma_y)$$.
 
 Combing the features of the game board from the perspective of an agent as well as its opponent can capture (almost) twice as much useful information for heuristic evaluation functions.  After all...if the environment is fully observable it makes sense for agents to utilise as much information as possible to make more accurate estimate.
 
-It is for this reason that many of the analysed heuristic evaluation functions involve features from both player's point of view. Features of an opponent player are denoted with the use of primed variables. For instance if $\beta$ is feature of a player, $\beta^{\prime}$ represents the respective opponent feature.  
+It is for this reason that many of the analysed heuristic evaluation functions involve features from both player's point of view. Features of an opponent player are denoted with the use of primed variables. For instance if $$\beta$$ is feature of a player, $$\beta^{\prime}$$ represents the respective opponent feature.  
 
 ## Heuristic Evaluation Function Comparative Analysis
 
@@ -83,6 +84,8 @@ It is for this reason that many of the analysed heuristic evaluation functions i
 
 ![Comparative analysis of various heuristic evaluation functions expressed as a heatmap of win-rates. The column $AVG$ indicates the mean across each CPU Agent, this is used as the primary indicator of performance.](heuristic_plot.png)
 
+<!-- {{ site.url }}/images/heuristic_plot.png -->
+
 <!-- 
 $n - n^{\prime}$
 $n - \alpha n^{\prime}$
@@ -102,6 +105,6 @@ $d_{p}$
 
 # Discussion
 
-Reinforcment learning is the way forward
+Reinforcement learning is the way forward
 
 
