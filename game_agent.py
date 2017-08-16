@@ -91,7 +91,7 @@ def dist_edge(coord, edge):
     
     Args:
         coord: The x (or y) component from a location tuple (x,y).
-        side: An x (or y) value corresponding to one of the edges of the board.
+        edge: An x (or y) value corresponding to one of the edges of the board.
       
     Returns:
         float: The ratio of blank spaces to total spaces on game board.     
