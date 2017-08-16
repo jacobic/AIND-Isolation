@@ -210,7 +210,7 @@ def score_border(game, player):
             score_corn += 1
         if (min_dist_edge(game, m) == 0):
             score_edge += 1         
-    score = float(10 * tuning * (0.7 * score_corn) + (0.3 * score_edge))
+    score = float(10 * tuning * ((0.7 * score_corn) + (0.3 * score_edge)))
     return float(score) 
     
 def custom_score(game, player):
